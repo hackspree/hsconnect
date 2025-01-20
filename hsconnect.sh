@@ -200,6 +200,7 @@ build_and_run_container() {
       -p 5001:5001 \
       -p 8080:8080 \
       -p 80:80 \
+      -v /data/ipfs:/root/.ipfs \
       hs-connect
 
     echo "Docker container 'hs-connect' is now running!"
