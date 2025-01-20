@@ -95,20 +95,9 @@ func main() {
 			return
 		}
 
-		// Write the response
-		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, \`
-<!DOCTYPE html>
-<html>
-<head>
-    <title>IPFS Bootstrap Node Information</title>
-</head>
-<body>
-    <h1>IPFS Bootstrap Node Information</h1>
-    <p><strong>Bootstrap Address:</strong> %s</p>
-</body>
-</html>
-\`, bootstrapAddress)
+		// Write the bootstrap address as plain text
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, bootstrapAddress)
 	})
 
 	// Start the HTTP server on port 80
@@ -214,7 +203,8 @@ build_and_run_container() {
       hs-connect
 
     echo "Docker container 'hs-connect' is now running!"
-    echo "Access the bootstrap information at: http://\$(curl -s ifconfig.me)/connect"
+    echo "Peers can add this bootstrap node using:"
+    echo "ipfs bootstrap add \$(curl http://\$(curl -s ifconfig.me)/connect)"
 }
 
 # Main script execution
