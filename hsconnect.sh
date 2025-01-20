@@ -17,6 +17,15 @@ kill_process_using_port() {
     echo "Process using port $port has been killed."
 }
 
+# Function to remove an existing container with the same name
+remove_existing_container() {
+    if docker ps -a --format '{{.Names}}' | grep -q '^hs-connect$'; then
+        echo "Removing existing container 'hs-connect'..."
+        docker rm -f hs-connect
+        echo "Existing container 'hs-connect' removed."
+    fi
+}
+
 # Function to create necessary files
 create_files() {
     mkdir -p /tmp/hs-connect
@@ -191,6 +200,9 @@ build_and_run_container() {
     if is_port_in_use 8080; then
         kill_process_using_port 8080
     fi
+
+    # Remove any existing container with the same name
+    remove_existing_container
 
     echo "Running Docker container..."
     docker run -d \
