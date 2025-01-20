@@ -136,9 +136,14 @@ if [ ! -f /root/.ipfs/config ]; then
     ipfs init
 fi
 
+# Configure IPFS to listen on the public IP
+ipfs config Addresses.API "/ip4/0.0.0.0/tcp/5001"
+ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080"
+ipfs config Addresses.Swarm "/ip4/0.0.0.0/tcp/4001"
+
 # Configure the bootstrap node
 ipfs bootstrap rm --all
-ipfs bootstrap add /ip4/0.0.0.0/tcp/4001/p2p/\$(ipfs config Identity.PeerID)
+ipfs bootstrap add /ip4/3.14.252.141/tcp/4001/p2p/\$(ipfs config Identity.PeerID)
 
 # Start IPFS daemon with PubSub enabled
 ipfs daemon --enable-pubsub-experiment &
@@ -196,16 +201,16 @@ build_and_run_container() {
     echo "Running Docker container..."
     docker run -d \
       --name hs-connect \
-      -p 4001:4001 \
-      -p 5001:5001 \
-      -p 8080:8080 \
-      -p 80:80 \
+      -p 3.14.252.141:4001:4001 \
+      -p 3.14.252.141:5001:5001 \
+      -p 3.14.252.141:8080:8080 \
+      -p 3.14.252.141:80:80 \
       -v /data/ipfs:/root/.ipfs \
       hs-connect
 
     echo "Docker container 'hs-connect' is now running!"
     echo "Peers can add this bootstrap node using:"
-    echo "ipfs bootstrap add \$(curl http://\$(curl -s ifconfig.me)/connect)"
+    echo "ipfs bootstrap add \$(curl http://3.14.252.141/connect)"
 }
 
 # Main script execution
