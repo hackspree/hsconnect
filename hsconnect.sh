@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# Function to check if a port is in use
+is_port_in_use() {
+    if sudo lsof -i :$1 &> /dev/null; then
+        return 0  # Port is in use
+    else
+        return 1  # Port is free
+    fi
+}
+
 # Function to create necessary files
 create_files() {
     mkdir -p /tmp/hs-connect
@@ -170,14 +179,26 @@ build_and_run_container() {
     echo "Building Docker image 'hs-connect'..."
     docker build -t hs-connect .
 
-    echo "Running Docker container..."
-    docker run -d \
-      --name hs-connect \
-      -p 4001:4001 \
-      -p 5001:5001 \
-      -p 8080:8080 \
-      -p 80:80 \
-      hs-connect
+    # Check if port 8080 is in use
+    if is_port_in_use 8080; then
+        echo "Port 8080 is already in use. Mapping container port 8080 to host port 8081..."
+        docker run -d \
+          --name hs-connect \
+          -p 4001:4001 \
+          -p 5001:5001 \
+          -p 8081:8080 \
+          -p 80:80 \
+          hs-connect
+    else
+        echo "Port 8080 is free. Mapping container port 8080 to host port 8080..."
+        docker run -d \
+          --name hs-connect \
+          -p 4001:4001 \
+          -p 5001:5001 \
+          -p 8080:8080 \
+          -p 80:80 \
+          hs-connect
+    fi
 
     echo "Docker container 'hs-connect' is now running!"
     echo "Access the bootstrap information at: http://\$(curl -s ifconfig.me)/connect"
