@@ -9,6 +9,14 @@ is_port_in_use() {
     fi
 }
 
+# Function to kill the process using a port
+kill_process_using_port() {
+    local port=$1
+    echo "Port $port is in use. Killing the process..."
+    sudo lsof -i :$port | awk 'NR==2 {print $2}' | xargs -r sudo kill -9
+    echo "Process using port $port has been killed."
+}
+
 # Function to create necessary files
 create_files() {
     mkdir -p /tmp/hs-connect
@@ -181,24 +189,17 @@ build_and_run_container() {
 
     # Check if port 8080 is in use
     if is_port_in_use 8080; then
-        echo "Port 8080 is already in use. Mapping container port 8080 to host port 8081..."
-        docker run -d \
-          --name hs-connect \
-          -p 4001:4001 \
-          -p 5001:5001 \
-          -p 8081:8080 \
-          -p 80:80 \
-          hs-connect
-    else
-        echo "Port 8080 is free. Mapping container port 8080 to host port 8080..."
-        docker run -d \
-          --name hs-connect \
-          -p 4001:4001 \
-          -p 5001:5001 \
-          -p 8080:8080 \
-          -p 80:80 \
-          hs-connect
+        kill_process_using_port 8080
     fi
+
+    echo "Running Docker container..."
+    docker run -d \
+      --name hs-connect \
+      -p 4001:4001 \
+      -p 5001:5001 \
+      -p 8080:8080 \
+      -p 80:80 \
+      hs-connect
 
     echo "Docker container 'hs-connect' is now running!"
     echo "Access the bootstrap information at: http://\$(curl -s ifconfig.me)/connect"
