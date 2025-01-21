@@ -139,7 +139,10 @@ fi
 # Configure IPFS to listen on all interfaces
 ipfs config Addresses.API "/ip4/0.0.0.0/tcp/5001"
 ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080"
-ipfs config Addresses.Swarm "/ip4/0.0.0.0/tcp/4001"
+ipfs config Addresses.Swarm '["/ip4/0.0.0.0/tcp/4001"]'
+
+# Enable NAT traversal (UPnP)
+ipfs config --json Swarm.DisableNatPortMap false
 
 # Get the public IP address
 PUBLIC_IP=\$(curl -s ifconfig.me)
@@ -147,9 +150,6 @@ PUBLIC_IP=\$(curl -s ifconfig.me)
 # Configure the bootstrap node
 ipfs bootstrap rm --all
 ipfs bootstrap add /ip4/\$PUBLIC_IP/tcp/4001/p2p/\$(ipfs config Identity.PeerID)
-
-# Enable NAT traversal (UPnP)
-ipfs config --json Swarm.DisableNatPortMap false
 
 # Start IPFS daemon with PubSub enabled
 ipfs daemon --enable-pubsub-experiment &
