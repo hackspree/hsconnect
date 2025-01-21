@@ -142,11 +142,14 @@ ipfs config Addresses.Gateway "/ip4/0.0.0.0/tcp/8080"
 ipfs config Addresses.Swarm "/ip4/0.0.0.0/tcp/4001"
 
 # Get the public IP address
-PUBLIC_IP=$(curl -s ifconfig.me)
+PUBLIC_IP=\$(curl -s ifconfig.me)
 
 # Configure the bootstrap node
 ipfs bootstrap rm --all
-ipfs bootstrap add /ip4/$PUBLIC_IP/tcp/4001/p2p/\$(ipfs config Identity.PeerID)
+ipfs bootstrap add /ip4/\$PUBLIC_IP/tcp/4001/p2p/\$(ipfs config Identity.PeerID)
+
+# Enable NAT traversal (UPnP)
+ipfs config --json Swarm.DisableNatPortMap false
 
 # Start IPFS daemon with PubSub enabled
 ipfs daemon --enable-pubsub-experiment &
@@ -193,10 +196,12 @@ build_and_run_container() {
     echo "Building Docker image 'hs-connect'..."
     docker build -t hs-connect .
 
-    # Check if port 8080 is in use
-    if is_port_in_use 8080; then
-        kill_process_using_port 8080
-    fi
+    # Check if ports are in use and kill processes if necessary
+    for port in 4001 5001 8080 80; do
+        if is_port_in_use $port; then
+            kill_process_using_port $port
+        fi
+    done
 
     # Remove any existing container with the same name
     remove_existing_container
